@@ -1,0 +1,144 @@
+Print["_____________________________________________PART_1__________________________________________________________________"]
+	Jk={0,0,2,4,7,2,4,7};
+	Print["Jk = "]
+	Print[Jk]
+	Ak=Mod[Jk,3];
+	Print["Ak = "]
+	Print[Ak]
+	A = {
+	{Ak[[1]],Ak[[2]],Ak[[4]],Ak[[5]]},
+	{Ak[[2]],Ak[[3]],Ak[[5]],Ak[[6]]},
+	{Ak[[3]],Ak[[4]],Ak[[6]],Ak[[7]]},
+	{Ak[[4]],Ak[[5]],Ak[[7]],Ak[[8]]}};
+
+	Print["A = "MatrixForm[A]]
+	Print["(1a) DG(G) : "]
+	GraphPlot[A, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+
+	(*
+	END PART 1
+	*)
+Print["_____________________________________________PART_2__________________________________________________________________"]
+
+	Bk= Table[If[Ak[[i]]>1,-1,Ak[[i]]],{i,Length[Ak]}];
+	M = {
+	{Bk[[3]],Bk[[4]],Bk[[5]],0,Bk[[7]],0,Bk[[1]],Bk[[2]]},
+	{-Bk[[3]],0,0,Bk[[6]],0,0,-1,1},
+	{0,-Bk[[4]],0,-Bk[[6]],0,Bk[[8]],Bk[[1]],Bk[[2]]},
+	{0,0,-Bk[[5]],0,-Bk[[7]],-Bk[[8]],1,-1}};
+	Print["M = "MatrixForm[M]]
+	II = M; 
+	(* Can't use character 'I'. -> change to II for matrix I
+	I = M only in my case (Jk has 2 zeroes)
+	else fix matrix-I manually as instruction
+	II = { {-1,1,...},{...},{...},{...} }
+	*)
+	Print["I = "MatrixForm[II]]
+
+	g = IncidenceGraph[II];
+	el = EdgeList[g];
+	Print["(2a) DG(G) : "]
+	IncidenceGraph[II,VertexLabels->"Name", EdgeLabels ->
+	Table[el[[i]] -> Subscript["e", i], {i, Length[el]}]]
+
+	AdjM = AdjacencyMatrix[g];
+	Print["(2b) A := AdjM(G) = "MatrixForm[AdjM]]
+	AdjM2 = MatrixPower[AdjM,2];
+	Print["(2b) A^2 = "MatrixForm[AdjM2]]
+
+	Print["(2c) is strongly connected : "ConnectedGraphQ[g]]
+	Print["(2c) strongly connected components : "]
+	Print[ConnectedComponents[g]]
+
+	(*
+	END PART 2
+	*)
+Print["_______________________________________________PART_3________________________________________________________________"]
+
+	rk=Mod[Jk,5];
+	Print["rk = "]
+	Print[rk]
+
+	R={{0,0},{rk[[1]],rk[[8]]},{rk[[2]],rk[[7]]},{rk[[3]],rk[[6]]},{rk[[4]],rk[[5]]}};
+	Print["R = "]
+	Print[R]
+
+	 GraphPlot[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}],DirectedEdges -> True, VertexLabeling->True]
+	Print["DG(R)"]
+	(*(3a) RflxTrnsClsr(R) *)
+	m1 = Normal[AdjacencyMatrix[TransitiveClosureGraph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	For[i =1,i<Length[m1]+1,i++,m1[[i]][[i]]=1];
+    
+	GraphPlot[m1, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+	g1 = AdjacencyGraph[m1,DirectedEdges->True, VertexLabels->Automatic];
+	Print["(3a) A = DG(RflxTrnsClsr(R))"]
+	elrn1 = EulerianGraphQ[g1];
+	Print["Elrn(A) : "elrn1]
+	If[elrn1==True,ec1 = FindEulerianCycle[g1];Print["Elrn Circle : "];Print[ec1];Table[HighlightGraph[g1, Part[First[ec1], 1 ;; i]], {i,Length[First[ec1]]}],]
+	hmltn1 = HamiltonianGraphQ[g1];
+	Print["Hmltn(A) : "hmltn1]
+	If[hmltn1==True,hc1 = FindHamiltonianCycle[g1];Print["Hmltn Circle : "];Print[hc1];HighlightGraph[g1, PathGraph[First[hc1]]],]
+
+	(*(3a) SymTrnsClsr(R) *)
+	m2 = Normal[AdjacencyMatrix[TransitiveClosureGraph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	m22 = Normal[AdjacencyMatrix[Graph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	(*FIX LOOP DISAPPEAR AFTER CASTING TransitiveClosureGraph*)
+	For[i =1,i<Length[m2]+1,i++,m2[[i]][[i]]= m22[[i]][[i]]];
+	(*Sym Transform*)
+	For[i = 1,i<Length[m2]+1,i++,	For[j=1,j<Length[m2]+1,j++,m2[[j]][[i]] = If[i==j,m2[[j]][[i]],If[m2[[i]][[j]]==0,m2[[j]][[i]],1]]]]
+
+	GraphPlot[m2, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+	g2 = AdjacencyGraph[m2,DirectedEdges->True, VertexLabels->Automatic];
+	Print["(3a) DG(SymTrnsClsr(R))"]
+	elrn2 = EulerianGraphQ[g2];
+	Print["Elrn(B) : "elrn2]
+	If[elrn2==True,ec2 = FindEulerianCycle[g2];Print["Elrn Circle : "];Print[ec2];Table[HighlightGraph[g2, Part[First[ec2], 1 ;; i]], {i,Length[First[ec2]]}],]
+	hmltn2 = HamiltonianGraphQ[g2];
+	Print["Hmltn(B) : "hmltn2]
+	If[hmltn2==True,hc2 = FindHamiltonianCycle[g2];Print["Hmltn Circle : "];Print[hc2];HighlightGraph[g2, PathGraph[First[hc2]]],]
+
+	(*(3a) EqvClsr(R) *)
+	m3 = m2;
+	For[i =1,i<Length[m3]+1,i++,m3[[i]][[i]]=1];
+    
+    
+	GraphPlot[m3, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+	g3 = AdjacencyGraph[m3,DirectedEdges->True, VertexLabels->Automatic];
+	Print["(3a) DG(EqvClsr(R))"]
+	elrn3 = EulerianGraphQ[g3];
+	Print["Elrn(C) : "elrn3]
+	If[elrn3==True,ec3 = FindEulerianCycle[g3];Print["Elrn Circle : "];Print[ec3];Table[HighlightGraph[g3, Part[First[ec3], 1 ;; i]], {i,Length[First[ec3]]}],]
+	hmltn3 = HamiltonianGraphQ[g3];
+	Print["Hmltn(C) : "hmltn3]
+	If[hmltn3==True,hc3 = FindHamiltonianCycle[g3];Print["Hmltn Circle : "];Print[hc3];HighlightGraph[g3, PathGraph[First[hc3]]],]
+
+Print["\n\n_________(3a)____________"]
+
+	(*(3b) RflxClsr(R) *)
+	m4 =  Normal[AdjacencyMatrix[Graph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	For[i =1,i<Length[m4]+1,i++,m4[[i]][[i]]=1];
+
+	GraphPlot[m4, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+	Print["(3b) DG(RflxClsr(R))"]
+	AdjM4 = MatrixForm[m4];
+	Print["AdjM(RflxClsr(R)) = "AdjM4];
+
+	(*(3b) SymClsr(R) *)
+	m5 =  Normal[AdjacencyMatrix[Graph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	For[i = 1,i<Length[m5]+1,i++,	For[j=1,j<Length[m5]+1,j++,m5[[j]][[i]] = If[i==j,m5[[j]][[i]],If[m5[[i]][[j]]==0,m5[[j]][[i]],1]]]]
+	GraphPlot[m5, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+	Print["(3b) DG(SymClsr(R))"]
+	AdjM5 = MatrixForm[m5];
+	Print["AdjM(SymClsr(R)) = "AdjM5];
+
+	(*(3b) TrnsClsr(R) *)
+	m6 = Normal[AdjacencyMatrix[TransitiveClosureGraph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	m66 = Normal[AdjacencyMatrix[Graph[Table[R[[i]][[1]]->R[[i]][[2]],{i,5}]]]];
+	(*FIX LOOP DISAPPEAR AFTER CASTING TransitiveClosureGraph*)
+	For[i =1,i<Length[m6]+1,i++,m6[[i]][[i]]= m66[[i]][[i]]];
+
+	GraphPlot[m6, VertexLabeling -> True,DirectedEdges->True,MultiedgeStyle->All,SelfLoopStyle->All]
+	Print["(3b) DG(TrnsClsr(R))"]
+	AdjM6 = MatrixForm[m6];
+	Print["AdjM(TrnsClsr(R)) = "AdjM6];
+		
